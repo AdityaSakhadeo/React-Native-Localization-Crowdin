@@ -37,7 +37,7 @@ const FirstPage = () => {
           'X-RapidAPI-Host': 'google-translation-unlimited.p.rapidapi.com'
         },
         data:{
-          json_code:'{"text":"thanks for your perce", "author":"Andry RL"}',
+          json_code:JSON.stringify(en),
           to_lang:lang
         }
       };
