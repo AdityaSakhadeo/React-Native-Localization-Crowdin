@@ -5,8 +5,9 @@ import * as RNLocalize from 'react-native-localize';
 
 const FirstPage = () => {
 
-
-  const [oriText, setOriText] = useState('My name is Aditya');
+  const en = require('../../en.json');
+  console.log(en)
+  const [oriText, setOriText] = useState(en);
   // const [oriText2,setOriText2] = useState("I am currently in Excellon Software pvt. ltd.")
   const [lang,setLang]=useState('en');
 
@@ -23,35 +24,37 @@ const FirstPage = () => {
 
   const translateText = async () => {
 
-    const options = {
-      method: 'POST',
-      url: 'https://google-translation-unlimited.p.rapidapi.com/translate',
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        'X-RapidAPI-Key': '4ec4bde91cmsh4ff8996210f10bdp131da0jsnbd6f9792eae1',
-        'X-RapidAPI-Host': 'google-translation-unlimited.p.rapidapi.com'
-      },
-      data:{
-        texte:oriText,
-        to_lang:lang
-      } 
-    };
-    
-    try {
-      const response = await axios.request(options);
-      console.log(response.data.translation_data);
-      const translationData = response.data['translation_data'];
-      // console.log(".....",translationData.translation)
-      setOriText(translationData.translation)
-
-    } catch (error) {
-      console.error(error);
-    }
+      // const encodedParams = new URLSearchParams();
+      // encodedParams.set('json_code', '{"text":"thanks for your perce", "author":"Andry RL"}');
+      // encodedParams.set('to_lang', 'fr');
+      console.log("...................inside fun.........")
+      const options = {
+        method: 'POST',
+        url: 'https://google-translation-unlimited.p.rapidapi.com/translate_json',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'X-RapidAPI-Key': '4ec4bde91cmsh4ff8996210f10bdp131da0jsnbd6f9792eae1',
+          'X-RapidAPI-Host': 'google-translation-unlimited.p.rapidapi.com'
+        },
+        data:{
+          json_code:'{"text":"thanks for your perce", "author":"Andry RL"}',
+          to_lang:lang
+        }
+      };
+      console.log("............",options)
+      
+      try {
+        const response = await axios.request(options);
+        console.log(response.data);
+        setOriText(response.data.json_traduit)
+      } catch (error) {
+        console.error(error);
+      }
   }
 
   return (
     <View style={{alignItems:'center'}}>
-      <Text style={{width:300,marginTop:100,fontSize:24,color:'black',fontWeight:'bold'}}>{oriText}</Text>
+      <Text style={{width:300,marginTop:100,fontSize:24,color:'black',fontWeight:'bold'}}>{oriText.text}</Text>
       {/* <Text style={{width:300,marginTop:100,fontSize:24,color:'black',fontWeight:'bold'}}>{oriText2}</Text> */}
     <TouchableOpacity onPress={translateText}>
       <Text style={{backgroundColor:'blue',padding:10,borderRadius:10}}>Translate</Text>
