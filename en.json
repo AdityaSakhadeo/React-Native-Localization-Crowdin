@@ -1,4 +1,6 @@
 {
-    "text": "thanks for your perce",
-    "author": "Andry RL"
+    "username":"Username",
+    "password":"Password",
+    "login":"Login",
+    "register":"Register"
 }
