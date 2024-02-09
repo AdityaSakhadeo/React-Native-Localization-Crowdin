@@ -55,6 +55,7 @@ const FirstPage = () => {
   return (
     <View style={{alignItems:'center'}}>
       <Text style={{width:300,marginTop:100,fontSize:24,color:'black',fontWeight:'bold'}}>{oriText.text}</Text>
+      <Text style={{width:300,marginTop:100,fontSize:24,color:'black',fontWeight:'bold'}}>{oriText.author}</Text>
       {/* <Text style={{width:300,marginTop:100,fontSize:24,color:'black',fontWeight:'bold'}}>{oriText2}</Text> */}
     <TouchableOpacity onPress={translateText}>
       <Text style={{backgroundColor:'blue',padding:10,borderRadius:10}}>Translate</Text>
