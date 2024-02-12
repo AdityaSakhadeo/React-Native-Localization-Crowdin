@@ -1,107 +1,95 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import * as RNLocalize from 'react-native-localize';
- import axios from 'axios';
- 
- 
-export default function Login() {
-  const en = require('../../en.json')
+import axios from 'axios';
+import { useDispatch ,useSelector} from 'react-redux';
+import { selectLanguage, setLanguage } from '../redux/langSllice';
+
+export default function Login({ navigation }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [login, setlogin] = useState(false);
-  const [oriText,setOriText] = useState(en)
-  const [lang,setLang] = useState('en')
+  const [login, setLogin] = useState(false);
 
-
+  const en = require('../../en.json');
+  console.log(en)
+  const [oriText, setOriText] = useState(en);
+  const dispatch = useDispatch();
+  const lang = useSelector(selectLanguage);
  
   useEffect(() => {
     const locales = RNLocalize.getLocales();
-    const preferredLanguage = locales[0].languageCode;
-    setLang(preferredLanguage);
-    console.log('Preferred Language:', preferredLanguage);
-
+    const preferredLanguage = locales[0].languageCode || 'en';
+    console.log('Before Language Set:', lang);
+    dispatch(setLanguage(preferredLanguage));
+    console.log('after Language set:', preferredLanguage);
     translateText();
-  }, [lang]);
- 
-  const translateText = async () => {
+  }, [dispatch,lang]);
 
-    // const encodedParams = new URLSearchParams();
-    // encodedParams.set('json_code', '{"text":"thanks for your perce", "author":"Andry RL"}');
-    // encodedParams.set('to_lang', 'fr');
-    console.log("...................inside fun.........")
+  const translateText = async () => {
     const options = {
-      method: 'POST',
-      url: 'https://google-translation-unlimited.p.rapidapi.com/translate_json',
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        'X-RapidAPI-Key': '4ec4bde91cmsh4ff8996210f10bdp131da0jsnbd6f9792eae1',
-        'X-RapidAPI-Host': 'google-translation-unlimited.p.rapidapi.com'
-      },
-      data:{
-        json_code:JSON.stringify(en),
-        to_lang:lang
-      }
-    };
-    console.log("............",options)
-    
+            method: 'POST',
+            url: 'https://google-translation-unlimited.p.rapidapi.com/translate_json',
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded',
+              'X-RapidAPI-Key': '4ec4bde91cmsh4ff8996210f10bdp131da0jsnbd6f9792eae1',
+              'X-RapidAPI-Host': 'google-translation-unlimited.p.rapidapi.com'
+            },
+            data:{
+              json_code:JSON.stringify(en),
+              to_lang:lang
+            }
+          };
+         
+
     try {
       const response = await axios.request(options);
       console.log(response.data);
-      setOriText(response.data.json_traduit)
+      setOriText(response.data.json_traduit);
     } catch (error) {
       console.error(error);
     }
-}
- 
+  }
+
   const handleLogin = async () => {
- 
- 
-    //validations...
+    // Validations...
     if (username.trim() === "") {
       alert("Username cannot be empty");
       return;
     }
- 
+
     if (password.trim() === "") {
       alert("Password cannot be empty");
       return;
     }
- 
- 
-    try {
-      
-        console.log("Api Call Started of Login")
-        const response = await axios.post('http://fordtst.excelloncloud.com/exApis/api/Authenticate/Login', {
-          username: username,
-          password: password,
-          forceLogin:true
-        });
- 
-     
-        console.log("Response/..............",JSON.stringify(response))
-        if (response.data.IsLogInSuccessful) {
-          setlogin(true);
-          alert("Login Successful");
-          navigation.navigate('profile');
-          setUsername("");
-          setPassword("");
-        } else {
-          alert("Invalid credentials. Please try again.");
-        }
-      } catch (error) {
 
-      
-        console.error("Error during login:", error);
-        alert("An error occurred during login. Please try again later.");
+    try {
+      console.log("Api Call Started of Login")
+      const response = await axios.post('http://fordtst.excelloncloud.com/exApis/api/Authenticate/Login', {
+        username: username,
+        password: password,
+        forceLogin: true
+      });
+
+      console.log("Response:", JSON.stringify(response))
+      if (response.data.IsLogInSuccessful) {
+        setLogin(true);
+        alert("Login Successful");
+        navigation.navigate('Home')
+        setUsername("");
+        setPassword("");
+      } else {
+        alert("Invalid credentials. Please try again.");
       }
-   
- 
+    } catch (error) {
+      console.error("Error during login:", error);
+      alert("An error occurred during login. Please try again later.");
+    }
   };
- 
+
   return (
     <>
       <View style={styles.container}>
-        <Text style={styles.heading}>Login</Text>
+        <Text style={styles.heading}>{oriText.login}</Text>
         <TextInput
           style={styles.input}
           value={username}
@@ -117,7 +105,7 @@ export default function Login() {
           secureTextEntry
           onChangeText={(text) => setPassword(text)}
         />
-        <Text style={styles.forgettext}>Forget password?</Text>
+        <Text style={styles.forgetText}>{oriText.forget}</Text>
         <View style={styles.buttons}>
           <TouchableOpacity onPress={handleLogin}>
             <View style={styles.button}>
@@ -125,12 +113,11 @@ export default function Login() {
             </View>
           </TouchableOpacity>
           <TouchableOpacity >
-            <View style={styles.regbutton}>
+            <View style={styles.regButton}>
               <Text style={styles.buttonLabel}>{oriText.register}</Text>
             </View>
           </TouchableOpacity>
         </View>
- 
       </View>
       {login &&
         <View>
@@ -141,7 +128,7 @@ export default function Login() {
     </>
   );
 }
- 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -149,7 +136,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 50,
     paddingVertical: 100,
-    top:40
+    top: 40
   },
   heading: {
     fontSize: 24,
@@ -168,7 +155,6 @@ const styles = StyleSheet.create({
   buttons: {
     flex: 1,
     flexDirection: 'row'
- 
   },
   button: {
     backgroundColor: 'green',
@@ -179,7 +165,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 10
   },
-  regbutton: {
+  regButton: {
     backgroundColor: 'green',
     width: 80,
     height: 40,
@@ -193,10 +179,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  forgettext: {
+  forgetText: {
     color: '#C33F22',
     marginLeft: 170,
     marginBottom: 30
   }
 });
- 

@@ -1,0 +1,37 @@
+[
+    {
+        "id":0,
+        "name":"Vrushabh Patil",
+        "followUps":"2nd Follow up",
+        "time":"11:00 AM",
+        "img": "require('../assets/avatar.png')"
+    },
+    {
+        "id":1,
+        "name":"Vrushabh Patil",
+        "followUps":"2nd Follow up",
+        "time":"11:00 AM",
+        "img": "require('../assets/avatar.png')"
+    },
+    {
+        "id":2,
+        "name":"Vrushabh Patil",
+        "followUps":"2nd Follow up",
+        "time":"11:00 AM",
+        "img": "require(../assets/avatar.png)"
+    },
+    {
+        "id":3,
+        "name":"Vrushabh Patil",
+        "followUps":"2nd Follow up",
+        "time":"11:00 AM",
+        "img": "require(../assets/avatar.png)"
+    },
+    {
+        "id":4,
+        "name":"Vrushabh Patil",
+        "followUps":"2nd Follow up",
+        "time":"11:00 AM",
+        "img": "require(../assets/avatar.png)"
+    }
+]

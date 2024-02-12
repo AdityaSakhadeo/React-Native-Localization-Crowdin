@@ -2,5 +2,21 @@
     "username":"Username",
     "password":"Password",
     "login":"Login",
-    "register":"Register"
+    "register":"Register",
+    "target":"My Target Report",
+    "lead":"Lead by Type",
+    "hot":"Hot",
+    "warm":"Warm",
+    "cold":"Cold",
+    "today":"Todays's Follow ups",
+    "name":"Vrushabh Patil",
+    "followUps":"2nd follow ups",
+    "showAll":"Show All",
+    "address":"Koregaon Park",
+    "Leads":"leads",
+    "vechicles":"38/40 vehicles",
+    "percent":"31%",
+    "date":"22 June",
+    "forget":"Forgot Password?",
+    "topName":"Aditya"
 }

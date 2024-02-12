@@ -1,58 +1,115 @@
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import Swiper from 'react-native-swiper';
-import ChartScreen from './ChartScreen';
-
+import { useEffect } from 'react';
+import * as RNLocalize from 'react-native-localize';
+import axios from 'axios';
+import { useDispatch,useSelector } from 'react-redux';
+import {selectLanguage} from '../redux/langSllice'
+import {setLanguage} from '../redux/langSllice'
 const leads = [
     {
         "id": 0,
-        "type": "Cold",
+        "type": "Hot",
         "number": 14,
-        "img": require('../assets/snowflake.png'),
+        "img": require('../assests/Images/explosive.png'),
     },
     {
         "id": 1,
         "type": "Warm",
         "number": 24,
-        "img": require('../assets/sun.png'),
+        "img": require('../assests/Images/sun.png'),
     },
     {
         "id": 2,
         "type": "Cold",
         "number": 32,
-        "img": require('../assets/snowflake.png'),
+        "img": require('../assests/Images/snowflake.png'),
     },
 ];
 
 const imgprofile = [
     {
-        "img": require('../assets/avatar.png')
+        "img": require('../assests/Images/avatar.png')
     },
     {
-        "img": require('../assets/avatar.png')
+        "img": require('../assests/Images/avatar.png')
     },
     {
-        "img": require('../assets/avatar2.png')
+        "img": require('../assests/Images/avatar.png')
     },
     {
-        "img": require('../assets/avatar3.png')
+        "img": require('../assests/Images/avatar.png')
     },
     {
-        "img": require('../assets/avatar4.png')
+        "img": require('../assests/Images/avatar.png')
     }
 ];
 
 const Home = () => {
+    const en = require('../../en.json');
+
+    const [oriText,setOriText] = useState(en);
+    // const [lang,setLang] = useState('en');
     const profileData = require('./Profile.json');
+    // useEffect(() => {
+    //     const locales = RNLocalize.getLocales();
+    //     const preferredLanguage = locales[0].languageCode;
+    //     setLang(preferredLanguage);
+    //     console.log('Preferred Language:', preferredLanguage);
+    
+    //     translateText();
+    //   }, [lang]);
+    const lang = useSelector(selectLanguage);
+    const dispatch = useDispatch();
+  
+    useEffect(() => {
+        const locales = RNLocalize.getLocales();
+        const preferredLanguage = locales[0].languageCode || 'en';
+        console.log('Before Language Set:', lang);
+        dispatch(setLanguage(preferredLanguage));
+        console.log('after Language set:', preferredLanguage);
+        translateText();
+      }, [dispatch,lang]);
+
+      const translateText = async () => {
+
+        // const encodedParams = new URLSearchParams();
+        // encodedParams.set('json_code', '{"text":"thanks for your perce", "author":"Andry RL"}');
+        // encodedParams.set('to_lang', 'fr');
+        console.log("...................inside fun.........")
+        const options = {
+          method: 'POST',
+          url: 'https://google-translation-unlimited.p.rapidapi.com/translate_json',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+            'X-RapidAPI-Key': '4ec4bde91cmsh4ff8996210f10bdp131da0jsnbd6f9792eae1',
+            'X-RapidAPI-Host': 'google-translation-unlimited.p.rapidapi.com'
+          },
+          data:{
+            json_code:JSON.stringify(en),
+            to_lang:lang
+          }
+        };
+        console.log("............",options)
+        
+        try {
+          const response = await axios.request(options);
+          console.log(response.data);
+          setOriText(response.data.json_traduit)
+        } catch (error) {
+          console.error(error);
+        }
+    }
 
     return (
         <ScrollView style={styles.container}>
             <View style={styles.topnamecontainer}>
                 <View style={styles.namecontainer}>
-                    <Text style={styles.name}>Shahid Shaikh</Text>
-                    <Text style={styles.village}>Koregaon Park</Text>
+                    <Text style={styles.name}>{oriText.topName}</Text>
+                    <Text style={styles.village}>{oriText.address}</Text>
                 </View>
-                <Image source={require('../assets/notification.png')} style={styles.notificationimg} />
+                <Image source={require('../assests/Images/notification.png')} style={styles.notificationimg} />
             </View>
 
             {/* ...............slider component............. */}
@@ -63,28 +120,28 @@ const Home = () => {
                     <View style={styles.insideslide}>
                         <View style={styles.slideContent}>
                             <View>
-                                <Text style={styles.title}>My Target Report</Text>
-                                <Text style={[styles.title, { opacity: 0.5 }]}>Leads</Text>
+                                <Text style={styles.title}>{oriText.target}</Text>
+                                <Text style={[styles.title, { opacity: 0.5 }]}>{oriText.Leads}</Text>
                             </View>
-                            <Text style={styles.subtitle}>June 2022</Text>
+                            <Text style={styles.subtitle}>{oriText.date}</Text>
                         </View>
                         <View style={{ flexDirection: 'row' }}>
-                            <Image source={require('../assets/linegraph.png')} style={styles.linegraphimg} />
-                            <Image source={require('../assets/spotcircle.png')} style={styles.circleimg} />
+                            <Image source={require('../assests/Images/notification.png')} style={styles.linegraphimg} />
+                            <Image source={require('../assests/Images/notification.png')} style={styles.circleimg} />
                         </View>
 
                         <View style={styles.slideContentInfo}>
                             <View style={styles.slideContentOne}>
                                 <Image
-                                    source={require('../assets/LineStroke.png')}
+                                    source={require('../assests/Images/LineStroke.png')}
                                     style={styles.lineimg}
                                 />
-                                <Text style={styles.percent}>23%</Text>
+                                <Text style={styles.percent}>{oriText.percent}</Text>
                             </View>
                             <View style={styles.slideContentTwo}>
-                                <Text style={styles.infoText}>31/40 vehicles</Text>
+                                <Text style={styles.infoText}>{oriText.vechicles}</Text>
                                 <Image
-                                    source={require('../assets/info-circle.png')}
+                                    source={require('../assests/Images/info-circle.png')}
                                     style={styles.infoimg}
                                 />
                             </View>
@@ -96,29 +153,29 @@ const Home = () => {
                     <View style={styles.insideslide}>
                         <View style={styles.slideContent}>
                             <View>
-                                <Text style={styles.title}>My Target Report</Text>
-                                <Text style={[styles.title, { opacity: 0.5 }]}>Leads</Text>
+                                <Text style={styles.title}>{oriText.target}</Text>
+                                <Text style={[styles.title, { opacity: 0.5 }]}>{oriText.Leads}</Text>
                             </View>
-                            <Text style={styles.subtitle}>June 2022</Text>
+                            <Text style={styles.subtitle}>{oriText.date}</Text>
                         </View>
                         <View style={{ flexDirection: 'row' }}>
-                            <Image source={require('../assets/linegraph.png')} style={styles.linegraphimg} />
-                            <Image source={require('../assets/spotcircle.png')} style={styles.circleimg} />
+                            <Image source={require('../assests/Images/linegraph.png')} style={styles.linegraphimg} />
+                            <Image source={require('../assests/Images/spotcircle.png')} style={styles.circleimg} />
                         </View>
 
 
                         <View style={styles.slideContentInfo}>
                             <View style={styles.slideContentOne}>
                                 <Image
-                                    source={require('../assets/LineStroke.png')}
+                                    source={require('../assests/Images/LineStroke.png')}
                                     style={styles.lineimg}
                                 />
-                                <Text style={styles.percent}>23%</Text>
+                                <Text style={styles.percent}>{oriText.percent}</Text>
                             </View>
                             <View style={styles.slideContentTwo}>
-                                <Text style={styles.infoText}>31/40 vehicles</Text>
+                                <Text style={styles.infoText}>{oriText.vechicles}</Text>
                                 <Image
-                                    source={require('../assets/info-circle.png')}
+                                    source={require('../assests/Images/info-circle.png')}
                                     style={styles.infoimg}
                                 />
                             </View>
@@ -132,29 +189,29 @@ const Home = () => {
                     <View style={styles.insideslide}>
                         <View style={styles.slideContent}>
                             <View>
-                                <Text style={styles.title}>My Target Report</Text>
-                                <Text style={[styles.title, { opacity: 0.5 }]}>Leads</Text>
+                                <Text style={styles.title}>{oriText.target}</Text>
+                                <Text style={[styles.title, { opacity: 0.5 }]}>{oriText.Leads}</Text>
                             </View>
-                            <Text style={styles.subtitle}>June 2022</Text>
+                            <Text style={styles.subtitle}>{oriText.date}</Text>
                         </View>
                         <View style={{ flexDirection: 'row' }}>
-                            <Image source={require('../assets/linegraph.png')} style={styles.linegraphimg} />
-                            <Image source={require('../assets/spotcircle.png')} style={styles.circleimg} />
+                            <Image source={require('../assests/Images/linegraph.png')} style={styles.linegraphimg} />
+                            <Image source={require('../assests/Images/spotcircle.png')} style={styles.circleimg} />
                         </View>
 
 
                         <View style={styles.slideContentInfo}>
                             <View style={styles.slideContentOne}>
                                 <Image
-                                    source={require('../assets/LineStroke.png')}
+                                    source={require('../assests/Images/LineStroke.png')}
                                     style={styles.lineimg}
                                 />
-                                <Text style={styles.percent}>23%</Text>
+                                <Text style={styles.percent}>{oriText.percent}</Text>
                             </View>
                             <View style={styles.slideContentTwo}>
-                                <Text style={styles.infoText}>31/40 vehicles</Text>
+                                <Text style={styles.infoText}>{oriText.vec}</Text>
                                 <Image
-                                    source={require('../assets/info-circle.png')}
+                                    source={require('../assests/Images/info-circle.png')}
                                     style={styles.infoimg}
                                 />
                             </View>
@@ -167,7 +224,7 @@ const Home = () => {
             {/* .........................Lead Container................ */}
             <View style={{ paddingBottom: 20 }}>
                 <View style={styles.leadcontainer}>
-                    <Text style={styles.heading}>Lead by Type</Text>
+                    <Text style={styles.heading}>{oriText.lead}</Text>
                     <View style={styles.leadtypes}>
 
                         {
@@ -190,8 +247,8 @@ const Home = () => {
             <View style={styles.followcontainer}>
                 <View style={styles.followUpsContainer}>
                     <View style={styles.header}>
-                        <Text style={styles.headerText}>Today's Follow Ups<Text style={styles.numbertext}>(10)</Text></Text>
-                        <Text style={styles.showAllText}>Show All</Text>
+                        <Text style={styles.headerText}>{oriText.today}<Text style={styles.numbertext}>(10)</Text></Text>
+                        <Text style={styles.showAllText}>{oriText.showAll}</Text>
                     </View>
                     <View style={styles.profileList}>
                         {profileData.map((item, index) => (
@@ -203,14 +260,14 @@ const Home = () => {
                                         <Image source={ele.img} style={styles.avatar} />
                                     ) : null)
                                     }
-                                    <Image source={require('../assets/star.png')} style={styles.star} />
+                                    <Image source={require('../assests/Images/star.png')} style={styles.star} />
                                 </View>
 
 
 
                                 <View style={styles.profileDetails}>
-                                    <Text style={styles.nameText}>{item.name}</Text>
-                                    <Text style={styles.followUpsText}>{item.followUps}</Text>
+                                    <Text style={styles.nameText}>{oriText.name}</Text>
+                                    <Text style={styles.followUpsText}>{oriText.followUps}</Text>
                                 </View>
                                 <Text style={styles.timeText}>{item.time}</Text>
                             </View>
