@@ -1,54 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity,ActivityIndicator } from 'react-native';
 import * as RNLocalize from 'react-native-localize';
 import axios from 'axios';
 import { useDispatch ,useSelector} from 'react-redux';
-import { selectLanguage, setLanguage } from '../redux/langSllice';
+import { selectLanguage, setLanguage, setTranslateText,selectTranslateText } from '../redux/langSllice';
+import {setTranslations,getTranslations} from '../../TranslateUtil'
 
 export default function Login({ navigation }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [login, setLogin] = useState(false);
+  const [loading,setLoading] = useState(true);
 
   const en = require('../../en.json');
   console.log(en)
-  const [oriText, setOriText] = useState(en);
+  const oriText = useSelector(selectTranslateText);
   const dispatch = useDispatch();
   const lang = useSelector(selectLanguage);
  
   useEffect(() => {
+    const fetchTranslations = async () => {
+      try {
+        const cachedTranslations = await getTranslations();
+        if (cachedTranslations[lang]) {
+          // Use cached translations
+          console.log("<<<<<<<<<<<<<<<<<<<<<<<<Language fetched without API");
+          setLoading(true);
+          dispatch(setTranslateText(cachedTranslations[lang]));
+          setLoading(false);
+        } else {
+          // Fetch translations from API
+          console.log("<<<<<<<<<<<<<<<<<<<<<<<<Language fetched with API")
+          setLoading(true);
+          const translations = await translateText();
+          setLoading(false);
+          // Update cache with new translations
+          cachedTranslations[lang] = translations;
+          await setTranslations(cachedTranslations);
+        }
+      } catch (error) {
+        console.error("Error fetching translations:", error);
+        // Handle error appropriately
+      } finally {
+
+      }
+    };
+
     const locales = RNLocalize.getLocales();
-    const preferredLanguage = locales[0].languageCode || 'en';
+    const preferredLanguage = locales[0]?.languageCode || 'en';
     console.log('Before Language Set:', lang);
     dispatch(setLanguage(preferredLanguage));
     console.log('after Language set:', preferredLanguage);
-    translateText();
-  }, [dispatch,lang]);
+    fetchTranslations();
+  }, [dispatch, lang]);
 
   const translateText = async () => {
     const options = {
-            method: 'POST',
-            url: 'https://google-translation-unlimited.p.rapidapi.com/translate_json',
-            headers: {
-              'content-type': 'application/x-www-form-urlencoded',
-              'X-RapidAPI-Key': '4ec4bde91cmsh4ff8996210f10bdp131da0jsnbd6f9792eae1',
-              'X-RapidAPI-Host': 'google-translation-unlimited.p.rapidapi.com'
-            },
-            data:{
-              json_code:JSON.stringify(en),
-              to_lang:lang
-            }
-          };
-         
+      method: 'POST',
+      url: 'https://google-translation-unlimited.p.rapidapi.com/translate_json',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'X-RapidAPI-Key': '4ec4bde91cmsh4ff8996210f10bdp131da0jsnbd6f9792eae1',
+        'X-RapidAPI-Host': 'google-translation-unlimited.p.rapidapi.com'
+      },
+      data: {
+        json_code: JSON.stringify(oriText),
+        to_lang: lang
+      }
+    };
 
     try {
       const response = await axios.request(options);
       console.log(response.data);
-      setOriText(response.data.json_traduit);
+      dispatch(setTranslateText(response.data.json_traduit));
+      return response.data.json_traduit;
     } catch (error) {
       console.error(error);
+      return '';
     }
-  }
+  };
+
 
   const handleLogin = async () => {
     // Validations...
@@ -89,44 +120,51 @@ export default function Login({ navigation }) {
   return (
     <>
       <View style={styles.container}>
-        <Text style={styles.heading}>{oriText.login}</Text>
-        <TextInput
-          style={styles.input}
-          value={username}
-          placeholder={oriText.username}
-          onChangeText={(text) => setUsername(text)}
-          autoCapitalize={'none'}
-          keyboardType={'email-address'}
-        />
-        <TextInput
-          style={styles.input}
-          value={password}
-          placeholder={oriText.password}
-          secureTextEntry
-          onChangeText={(text) => setPassword(text)}
-        />
-        <Text style={styles.forgetText}>{oriText.forget}</Text>
-        <View style={styles.buttons}>
-          <TouchableOpacity onPress={handleLogin}>
-            <View style={styles.button}>
-              <Text style={styles.buttonLabel}>{oriText.login}</Text>
+        {loading ? (
+          <ActivityIndicator size={'large'} color={'#0000ff'} />
+        ) : (
+          <>
+            <Text style={styles.heading}>{oriText.login}</Text>
+            <TextInput
+              style={styles.input}
+              value={username}
+              placeholder={oriText.username}
+              onChangeText={(text) => setUsername(text)}
+              autoCapitalize={'none'}
+              keyboardType={'email-address'}
+            />
+            <TextInput
+              style={styles.input}
+              value={password}
+              placeholder={oriText.password}
+              secureTextEntry
+              onChangeText={(text) => setPassword(text)}
+            />
+            <Text style={styles.forgetText}>{oriText.forget}</Text>
+            <View style={styles.buttons}>
+              <TouchableOpacity onPress={handleLogin}>
+                <View style={styles.button}>
+                  <Text style={styles.buttonLabel}>{oriText.login}</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <View style={styles.regButton}>
+                  <Text style={styles.buttonLabel}>{oriText.register}</Text>
+                </View>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-          <TouchableOpacity >
-            <View style={styles.regButton}>
-              <Text style={styles.buttonLabel}>{oriText.register}</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+            {login && (
+              <View>
+                <Text>{username}</Text>
+                <Text>{password}</Text>
+              </View>
+            )}
+          </>
+        )}
       </View>
-      {login &&
-        <View>
-          <Text>{username}</Text>
-          <Text>{password}</Text>
-        </View>
-      }
     </>
   );
+  
 }
 
 const styles = StyleSheet.create({
@@ -158,8 +196,8 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: 'green',
-    width: 60,
-    height: 40,
+    width: 100,
+    height: 100,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -167,8 +205,8 @@ const styles = StyleSheet.create({
   },
   regButton: {
     backgroundColor: 'green',
-    width: 80,
-    height: 40,
+    width: 100,
+    height: 100,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -183,5 +221,10 @@ const styles = StyleSheet.create({
     color: '#C33F22',
     marginLeft: 170,
     marginBottom: 30
-  }
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

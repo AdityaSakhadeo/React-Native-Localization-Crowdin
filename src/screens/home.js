@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import * as RNLocalize from 'react-native-localize';
 import axios from 'axios';
 import { useDispatch,useSelector } from 'react-redux';
-import {selectLanguage} from '../redux/langSllice'
+import {selectLanguage,selectTranslateText,setTranslateText} from '../redux/langSllice'
 import {setLanguage} from '../redux/langSllice'
 const leads = [
     {
@@ -49,7 +49,7 @@ const imgprofile = [
 const Home = () => {
     const en = require('../../en.json');
 
-    const [oriText,setOriText] = useState(en);
+    const oriText = useSelector(selectTranslateText);
     // const [lang,setLang] = useState('en');
     const profileData = require('./Profile.json');
     // useEffect(() => {
@@ -64,20 +64,30 @@ const Home = () => {
     const dispatch = useDispatch();
   
     useEffect(() => {
+        const fetchTranslations = async () => {
+          const cachedTranslations = await getTranslations();
+      
+          if (cachedTranslations[lang]) {
+            // Use cached translations
+            dispatch(setTranslateText(cachedTranslations[lang]));
+          } else {
+            // Fetch translations from API
+            const translations = await translateText();
+            // Update cache with new translations
+            cachedTranslations[lang] = translations;
+            await setTranslations(cachedTranslations);
+          }
+        };
+      
         const locales = RNLocalize.getLocales();
-        const preferredLanguage = locales[0].languageCode || 'en';
+        const preferredLanguage = locales[0]?.languageCode || 'en';
         console.log('Before Language Set:', lang);
         dispatch(setLanguage(preferredLanguage));
         console.log('after Language set:', preferredLanguage);
-        translateText();
-      }, [dispatch,lang]);
+        fetchTranslations();
+      }, [dispatch, lang]);
 
       const translateText = async () => {
-
-        // const encodedParams = new URLSearchParams();
-        // encodedParams.set('json_code', '{"text":"thanks for your perce", "author":"Andry RL"}');
-        // encodedParams.set('to_lang', 'fr');
-        console.log("...................inside fun.........")
         const options = {
           method: 'POST',
           url: 'https://google-translation-unlimited.p.rapidapi.com/translate_json',
@@ -86,21 +96,22 @@ const Home = () => {
             'X-RapidAPI-Key': '4ec4bde91cmsh4ff8996210f10bdp131da0jsnbd6f9792eae1',
             'X-RapidAPI-Host': 'google-translation-unlimited.p.rapidapi.com'
           },
-          data:{
-            json_code:JSON.stringify(en),
-            to_lang:lang
+          data: {
+            json_code: JSON.stringify(oriText),
+            to_lang: lang
           }
         };
-        console.log("............",options)
-        
+     
         try {
           const response = await axios.request(options);
           console.log(response.data);
-          setOriText(response.data.json_traduit)
+          dispatch(setTranslateText(response.data.json_traduit));
+          return response.data.json_traduit;
         } catch (error) {
           console.error(error);
+          return '';
         }
-    }
+      };
 
     return (
         <ScrollView style={styles.container}>
